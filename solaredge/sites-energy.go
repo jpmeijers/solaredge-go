@@ -6,22 +6,25 @@ import (
 )
 
 type SitesEnergy struct {
-	TimeUnit string `json:"timeUnit"`
-	Unit string `json:"unit"`
-	Count int64 `json:"count"`
-	List []struct {
-		ID int64 `json:"id"`
-		Values []SiteEnergyValue
-	}
+	TimeUnit       string `json:"timeUnit"`
+	Unit           string `json:"unit"`
+	Count          int64  `json:"count"`
+	SiteEnergyList []struct {
+		SiteId       int64 `json:"siteId"`
+		EnergyValues struct {
+			MeasuredBy string            `json:"measuredBy"`
+			Values     []SiteEnergyValue `json:"values"`
+		} `json:"energyValues"`
+	} `json:"siteEnergyList"`
 }
 
 type SitesEnergyResponse struct {
-	Energy SitesEnergy `json:"energy"`
+	Energy SitesEnergy `json:"sitesEnergy"`
 }
 
 func (s *SitesService) Energy(siteIDS []int64, energyOptions *SiteEnergyRequest) (SitesEnergy, error) {
 	IDS := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(siteIDS)), ","), "[]")
-	u, err := addOptions(fmt.Sprintf("/site/%s/energy/", IDS), energyOptions)
+	u, err := addOptions(fmt.Sprintf("/sites/%s/energy", IDS), energyOptions)
 	if err != nil {
 		return SitesEnergy{}, err
 	}

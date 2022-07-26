@@ -6,25 +6,25 @@ import (
 
 type SiteEnergyRequest struct {
 	TimePeriodRequest
-	TimeUnit string `json:"timeUnit"`
+	TimeUnit string `json:"timeUnit" url:"timeUnit"`
 }
 
 type SiteEnergyValue struct {
-	Date DateTime `json:"date"`
+	Date  DateTime `json:"date"`
 	Value *float64 `json:"value"`
 }
 
 type SiteEnergyResponse struct {
 	Energy struct {
 		TimeUnit string `json:"timeUnit"`
-		Unit string `json:"unit"`
-		Values []SiteEnergyValue
+		Unit     string `json:"unit"`
+		Values   []SiteEnergyValue
 	} `json:"energy"`
 }
 
 type TimeFrameEnergy struct {
 	Energy float64 `json:"energy"`
-	Unit string `json:"unit"`
+	Unit   string  `json:"unit"`
 }
 
 type TimeFrameEnergyResponse struct {
@@ -58,5 +58,3 @@ func (s *SiteService) TimeFrameEnergy(siteId int64, energyOptions *SiteEnergyReq
 	_, err = s.client.do(req, &timeFrameEnergyResponse)
 	return timeFrameEnergyResponse.TimeFrameEnergy, err
 }
-
-

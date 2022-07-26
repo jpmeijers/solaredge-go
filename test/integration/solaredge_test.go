@@ -2,10 +2,11 @@ package integration
 
 import (
 	"github.com/elliott-davis/solaredge-go/solaredge"
-	"github.com/stretchr/testify/assert"
+	"log"
 	"os"
 	"strconv"
 	"testing"
+	"time"
 )
 
 var (
@@ -24,11 +25,14 @@ func init() {
 }
 
 func TestSitesList(t *testing.T) {
-	site, err := client.Site.List(&solaredge.ListOptions{Page: 2, PerPage: 1})
+	sites, err := client.Site.List(&solaredge.ListOptions{})
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, site, "", "dummy check")
+	if len(sites) == 0 {
+		t.Error("no sites returned")
+	}
+	log.Printf("Found %d sites", len(sites))
 }
 
 func TestSiteDetails(t *testing.T) {
@@ -36,6 +40,38 @@ func TestSiteDetails(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, site, "", "dummy check")
+	if site.ID != siteID {
+		t.Fatalf("site ID does not match")
+	}
 }
 
+func TestSitesEnergies(t *testing.T) {
+	ids := []int64{2249706, 1051426, 2935522}
+
+	energies, err := client.Sites.Energy(ids, &solaredge.SiteEnergyRequest{
+		TimePeriodRequest: solaredge.TimePeriodRequest{
+			StartDate: solaredge.YMDTime(time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)),
+			EndDate:   solaredge.YMDTime(time.Date(2022, 07, 26, 0, 0, 0, 0, time.UTC)),
+		},
+		TimeUnit: "HOUR",
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if len(energies.SiteEnergyList) == 0 {
+		log.Fatalf("no sites returned")
+	}
+
+	for _, energy := range energies.SiteEnergyList {
+		log.Println("Site ID:", energy.SiteId)
+		log.Println("Measure By:", energy.EnergyValues.MeasuredBy)
+		for _, value := range energy.EnergyValues.Values {
+			if value.Value != nil {
+				log.Printf("%s: %f", value.Date, *value.Value)
+			} else {
+				log.Printf("%s: ---", value.Date)
+			}
+		}
+	}
+}

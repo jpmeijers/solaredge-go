@@ -3,12 +3,12 @@ package solaredge
 type SiteListResponse struct {
 	Sites struct {
 		Count int64  `json:"count"`
-		List  []Site `json:"list"`
+		List  []Site `json:"site"`
 	}
 }
 
 func (s *SiteService) List(listOptions *ListOptions) ([]Site, error) {
-	u, err := addOptions("/sites/list/", listOptions)
+	u, err := addOptions("/sites/list", listOptions)
 	if err != nil {
 		return nil, err
 	}
