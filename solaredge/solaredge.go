@@ -3,8 +3,11 @@ package solaredge
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -19,16 +22,15 @@ const (
 )
 
 type Client struct {
-	BaseURL *url.URL
+	BaseURL   *url.URL
 	UserAgent string
-	Token string
+	Token     string
 
 	common service
 
 	client *http.Client
-	Site *SiteService
-	Sites *SitesService
-
+	Site   *SiteService
+	Sites  *SitesService
 }
 
 type service struct {
@@ -98,15 +100,21 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 }
 
 func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
-	fmt.Println(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	fmt.Println(resp.Body)
+	if resp.StatusCode != 200 {
+		log.Println(resp.Status)
+		body, _ := ioutil.ReadAll(resp.Body)
+		log.Println(string(body))
+		return nil, errors.New(resp.Status)
+	}
 	err = json.NewDecoder(resp.Body).Decode(v)
-	fmt.Println(resp)
+	if err != nil {
+		return nil, err
+	}
+	err = resp.Body.Close()
 	return resp, err
 }
 
