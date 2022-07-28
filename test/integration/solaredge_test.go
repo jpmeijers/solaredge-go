@@ -75,3 +75,28 @@ func TestSitesEnergies(t *testing.T) {
 		}
 	}
 }
+
+func TestSiteEnergyDetails(t *testing.T) {
+	ids := []int64{2249706}
+
+	timeUnit := solaredge.QuarterOfAnHour
+	for _, id := range ids {
+		details, err := client.Site.EnergyDetails(id, solaredge.SiteEnergyDetailsRequest{
+			StartTime: solaredge.DateTime{Time: time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)},
+			EndTime:   solaredge.DateTime{Time: time.Date(2022, 07, 26, 0, 0, 0, 0, time.UTC)},
+			Meters:    nil,
+			TimeUnit:  &timeUnit,
+		})
+		if err != nil {
+			return
+		}
+		for _, meter := range details.Meters {
+			log.Println(meter.Type.String())
+			for _, value := range meter.Values {
+				if value.Value != nil {
+					log.Println(value.Date, ":", *value.Value)
+				}
+			}
+		}
+	}
+}

@@ -7,8 +7,8 @@ import (
 )
 
 type SitePowerDetailValues struct {
-	Date DateTime `json:"date"`
-	Value *float32 `json:"value"`
+	Date  DateTime `json:"date"`
+	Value *float64 `json:"value"`
 }
 
 type SitePowerResponse struct {
@@ -17,13 +17,13 @@ type SitePowerResponse struct {
 
 type SitePower struct {
 	TimeUnit string `json:"timeUnit"`
-	Unit string `json:"unit"`
-	Values []SitePowerDetailValues
+	Unit     string `json:"unit"`
+	Values   []SitePowerDetailValues
 }
 
 type SitePowerRequest struct {
 	StartTime DateTime `url:"startTime"`
-	EndTime DateTime `url:"endTime"`
+	EndTime   DateTime `url:"endTime"`
 }
 
 func (s *SiteService) Power(siteId int64, request SitePowerRequest) (SitePower, error) {
@@ -31,7 +31,7 @@ func (s *SiteService) Power(siteId int64, request SitePowerRequest) (SitePower, 
 	if request.EndTime.IsZero() || request.StartTime.IsZero() {
 		return SitePower{}, errors.New("start and End times are required")
 	}
-	if request.EndTime.Sub(request.StartTime.Time) > time.Hour * 24 *  31 {
+	if request.EndTime.Sub(request.StartTime.Time) > time.Hour*24*31 {
 		return SitePower{}, errors.New("duration between StartDate and EndDate should be less than one month")
 	}
 
