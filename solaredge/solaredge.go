@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -105,10 +104,8 @@ func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 		return nil, err
 	}
 	if resp.StatusCode != 200 {
-		log.Println(resp.Status)
 		body, _ := ioutil.ReadAll(resp.Body)
-		log.Println(string(body))
-		return nil, errors.New(resp.Status)
+		return nil, errors.New(resp.Status + " " + string(body))
 	}
 	err = json.NewDecoder(resp.Body).Decode(v)
 	if err != nil {

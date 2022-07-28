@@ -4,23 +4,16 @@ import (
 	"github.com/elliott-davis/solaredge-go/solaredge"
 	"log"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 )
 
 var (
 	client *solaredge.Client
-	siteID int64
 )
 
 func init() {
 	token := os.Getenv("SOLAREDGE_AUTH_TOKEN")
-	id, err := strconv.ParseInt(os.Getenv("SOLAREDGE_SITE_ID"), 10, 64)
-	if err != nil {
-		panic("Can't get site ID")
-	}
-	siteID = id
 	client = solaredge.NewClient(nil, token)
 }
 
@@ -36,12 +29,41 @@ func TestSitesList(t *testing.T) {
 }
 
 func TestSiteDetails(t *testing.T) {
-	site, err := client.Site.Details(siteID)
+	var id int64 = 2249706
+
+	site, err := client.Site.Details(id)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf(err.Error())
 	}
-	if site.ID != siteID {
+	if site.ID != id {
 		t.Fatalf("site ID does not match")
+	}
+	log.Printf("%+v", site)
+}
+
+func TestSiteEnergy(t *testing.T) {
+	var id int64 = 2249706
+
+	energies, err := client.Site.Energy(id, solaredge.SiteEnergyRequest{
+		TimePeriodRequest: solaredge.TimePeriodRequest{
+			StartDate: solaredge.YMDTime(time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)),
+			EndDate:   solaredge.YMDTime(time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)),
+		},
+		TimeUnit: solaredge.QuarterOfAnHour,
+	})
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	if len(energies) == 0 {
+		log.Fatalf("no energies returned")
+	}
+	for _, value := range energies {
+		if value.Value != nil {
+			log.Printf("%s: %f", value.Date, *value.Value)
+		} else {
+			log.Printf("%s: ---", value.Date)
+		}
 	}
 }
 
@@ -53,7 +75,7 @@ func TestSitesEnergies(t *testing.T) {
 			StartDate: solaredge.YMDTime(time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)),
 			EndDate:   solaredge.YMDTime(time.Date(2022, 07, 26, 0, 0, 0, 0, time.UTC)),
 		},
-		TimeUnit: "HOUR",
+		TimeUnit: solaredge.Hour,
 	})
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -79,17 +101,17 @@ func TestSitesEnergies(t *testing.T) {
 func TestSiteEnergyDetails(t *testing.T) {
 	ids := []int64{2249706}
 
-	timeUnit := solaredge.QuarterOfAnHour
 	for _, id := range ids {
 		details, err := client.Site.EnergyDetails(id, solaredge.SiteEnergyDetailsRequest{
 			StartTime: solaredge.DateTime{Time: time.Date(2022, 07, 25, 0, 0, 0, 0, time.UTC)},
 			EndTime:   solaredge.DateTime{Time: time.Date(2022, 07, 26, 0, 0, 0, 0, time.UTC)},
 			Meters:    nil,
-			TimeUnit:  &timeUnit,
+			TimeUnit:  solaredge.QuarterOfAnHour,
 		})
 		if err != nil {
 			return
 		}
+		//log.Printf("%+v", details)
 		for _, meter := range details.Meters {
 			log.Println(meter.Type.String())
 			for _, value := range meter.Values {

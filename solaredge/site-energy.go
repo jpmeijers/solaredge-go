@@ -6,7 +6,7 @@ import (
 
 type SiteEnergyRequest struct {
 	TimePeriodRequest
-	TimeUnit string `json:"timeUnit" url:"timeUnit"`
+	TimeUnit TimeUnit `json:"timeUnit" url:"timeUnit"`
 }
 
 type SiteEnergyValue struct {
@@ -31,7 +31,7 @@ type TimeFrameEnergyResponse struct {
 	TimeFrameEnergy TimeFrameEnergy `json:"timeFrameEnergy"`
 }
 
-func (s *SiteService) Energy(siteId int64, energyOptions TimePeriodRequest) ([]SiteEnergyValue, error) {
+func (s *SiteService) Energy(siteId int64, energyOptions SiteEnergyRequest) ([]SiteEnergyValue, error) {
 	u, err := addOptions(fmt.Sprintf("/site/%d/energy/", siteId), energyOptions)
 	if err != nil {
 		return nil, err
